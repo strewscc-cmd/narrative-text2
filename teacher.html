@@ -1,0 +1,22 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Quackville · Teacher view</title><script src="config.js"></script>
+<style>body{font-family:Fredoka,"Trebuchet MS",sans-serif;background:#8fe3e6;color:#6b3f2a;margin:0;padding:16px}.card{background:#fff1d0;border:4px solid #6b3f2a;border-radius:22px;box-shadow:0 6px 0 #c98f55;padding:14px;margin:0 auto 14px;max-width:960px}.btn{font:inherit;font-weight:700;background:#ffb938;color:#6b3f2a;border:3px solid #6b3f2a;border-radius:14px;padding:8px 16px;cursor:pointer;box-shadow:0 4px 0 #6b3f2a}input{font:inherit;border:3px solid #6b3f2a;border-radius:12px;padding:8px 12px;background:#fffbe9;color:#6b3f2a}.pill{display:inline-block;background:#fffbe9;border:3px solid #6b3f2a;border-radius:999px;padding:2px 12px;margin:3px;font-weight:600}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}.g{background:#fffbe9;border:3px solid #6b3f2a;border-radius:16px;padding:10px}.off{opacity:.45}h1,h2,h3{margin:.2em 0}</style></head><body>
+<div class="card"><h1>🦆 Quackville · Teacher view</h1><input id="cc" placeholder="Class code" maxlength="16"> <button class="btn" id="go">Connect</button> <span id="st"></span></div>
+<div id="app" style="display:none"><div class="card" id="stats"></div>
+<div class="card"><h2>📢 Announcement</h2><input id="an" maxlength="80" style="width:min(100%,480px)" placeholder="Message for all players"> <button class="btn" id="sn">Send</button></div>
+<div class="card"><h2>Groups</h2><div class="grid" id="groups"></div></div>
+<div class="card"><h2>🏆 Ranking</h2><div id="rank"></div><p><button class="btn" id="csv">Download CSV</button></p></div></div>
+<script>
+const $=id=>document.getElementById(id),esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let val={},base=null,rows=[];const loadJS=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
+$('go').onclick=async()=>{const cfg=window.FIREBASE_CONFIG;if(!cfg||!cfg.databaseURL){$('st').textContent='Fill in config.js first.';return}
+const code=$('cc').value.toUpperCase().replace(/[^A-Z0-9_-]/g,'');if(!code){$('st').textContent='Type the class code.';return}$('st').textContent='Connecting…';
+try{if(!window.firebase){await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js')}
+if(!firebase.apps.length)firebase.initializeApp(cfg);base=firebase.database().ref('rooms/'+code);base.on('value',s=>{val=s.val()||{}});$('app').style.display='block';$('st').textContent='Live: '+code;render();setInterval(render,1000)}catch(e){$('st').textContent='Could not connect.'}};
+function render(){const gs=Object.keys(val).filter(k=>/^g\d+$/.test(k)).sort((a,b)=>a.slice(1)-b.slice(1)),board=val.board||{},on=new Set();let n=0;
+$('groups').innerHTML=gs.map(k=>{const pl=(val[k]||{}).players||{},ps=Object.entries(pl);ps.forEach(([id])=>on.add(id));n+=ps.length;return `<div class="g"><h3>Group ${esc(k.slice(1))} · ${ps.length} online</h3>${ps.map(([id,p])=>`<div>${esc(p.n)} · 🪙${+p.co||0}${p.h?' 🏠':''}</div>`).join('')||'<i>nobody online</i>'}</div>`}).join('')||'<i>No groups yet.</i>';
+rows=Object.entries(board).map(([id,v])=>({n:v.n,g:+v.g||0,co:+v.co||0,on:on.has(id)})).sort((a,b)=>b.co-a.co);
+$('rank').innerHTML=rows.map((r,i)=>`<div class="pill ${r.on?'':'off'}">${i+1}. ${esc(r.n)} · G${r.g} · 🪙${r.co}</div>`).join('')||'<i>No players yet.</i>';
+$('stats').innerHTML=`<span class="pill">🟢 Online ${n}</span><span class="pill">👥 Players ${rows.length}</span><span class="pill">🪙 Total ${rows.reduce((a,r)=>a+r.co,0)}</span>`}
+$('sn').onclick=()=>{const t=$('an').value.trim();if(!base||!t)return;base.child('announce').set({text:t,at:firebase.database.ServerValue.TIMESTAMP});$('an').value='';$('st').textContent='Announcement sent'};
+$('csv').onclick=()=>{const q=s=>'"'+String(s).replace(/"/g,'""')+'"',b=new Blob(['name,group,coins,online\n'+rows.map(r=>[q(r.n),r.g,r.co,r.on].join(',')).join('\n')],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='quackville-ranking.csv';a.click()};
+</script></body></html>

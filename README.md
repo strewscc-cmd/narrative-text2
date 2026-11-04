@@ -1,0 +1,39 @@
+# Quackville: Story Quests (multiplayer)
+
+Game belajar narrative text + grammar. Satu kelas dibagi beberapa kelompok (maks 6 orang per kelompok).
+Tiap kelompok berada di desa yang sama, bisa saling lihat, dan bisa mencuri koin (setelah menjawab soal kilat).
+Ranking koin dihitung untuk seluruh kelas.
+
+## 1. Siapkan Firebase (gratis, sekitar 5 menit)
+1. Buka https://console.firebase.google.com, buat project baru.
+2. Build > **Realtime Database** > Create database (pilih lokasi terdekat, mis. Singapore). Mulai dengan *locked mode*.
+3. Tab **Rules**: tempel isi `database.rules.json`, lalu Publish.
+4. Project settings (ikon roda gigi) > **Your apps** > tambah Web app (`</>`). Salin objek `firebaseConfig`.
+5. Isi `config.js` dengan nilai itu. **`databaseURL` wajib diisi** (ada di tab Realtime Database).
+
+## 2. Deploy
+- Push folder ini ke GitHub, lalu di **Netlify** atau **Vercel**: *Add new project* > pilih repo > deploy (tanpa build command, folder root).
+- Bagikan link ke siswa.
+
+## 3. Cara memakai di kelas
+- Guru membuat **kode kelas** (contoh `XIA2025`) dan membagi siswa ke Grup 1, 2, 3, dst.
+- Siswa: buka link > PLAY > buat bebek dan nama > tombol 👥 di menu awal > isi kode kelas dan nomor grup > Join.
+- Tombol 🏆 di layar permainan menampilkan ranking kelas.
+- Mencuri: tap bebek teman yang dekat, jawab soal kilat. Berhasil = ambil sekitar 10% koin korban (5 sampai 50).
+  Gagal = kehilangan 3 koin. Jeda 30 detik antar percobaan. Korban dapat perisai 60 detik, dan koin di bawah 20 tidak bisa dicuri.
+  Hanya pemain yang sedang online dan tidak di dalam rumah yang bisa dicuri.
+
+## Fitur tambahan
+- **Grup otomatis:** siswa cukup mengisi kode kelas dan memilih "Auto"; game memasukkan mereka ke grup pertama yang masih punya tempat. Siswa tetap bisa memilih nomor grup sendiri.
+- **Emote dan frasa cepat:** tombol 😀 di layar permainan. Pilihannya tetap (emoji dan 4 frasa), jadi tidak ada chat bebas.
+- **Halaman guru:** buka `teacher.html` di alamat situs yang sama (contoh `https://situsmu.netlify.app/teacher.html`), masukkan kode kelas. Terlihat siapa online di tiap grup, ranking koin, tombol pengumuman ke semua pemain, dan unduh CSV.
+  Halaman ini tidak dikunci, jadi jangan bagikan alamatnya ke siswa.
+
+## Pengaturan
+Di `index.html`, cari `MAXG=6` (maksimal pemain per grup). Jumlah koin curian ada di fungsi `stealUI`.
+
+## Catatan
+- Aturan database di atas terbuka untuk siapa pun yang tahu kode kelas. Cukup untuk kelas, tapi pakai kode yang tidak mudah ditebak.
+- Koin disimpan di browser pemain, jadi bisa diakali lewat developer tools. Cocok untuk kelas, bukan untuk kompetisi serius.
+- Paket gratis Firebase membatasi koneksi bersamaan (setahuku sekitar 100). Cek batas terbaru di dokumentasi Firebase.
+- Tanpa isi `config.js`, game tetap bisa dimainkan solo.
