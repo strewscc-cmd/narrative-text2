@@ -242,7 +242,7 @@ for(let y=25;y<=28;y++)for(let x=36;x<=40;x++)GR[y][x]=2;
 road(2,6,41,7);road(2,14,41,15);road(2,23,41,24);road(21,2,22,27);
 for(let y=12;y<=17;y++)for(let x=18;x<=25;x++)GR[y][x]=3;
 [[5,4,'house0'],[10,4,'house1'],[15,4,'shop0'],[24,4,'shop8'],[34,4,'shop3'],[38,4,'house2'],[4,12,'house3'],[9,12,'house4','My Home'],[14,12,'shop7'],[34,12,'house5'],[38,12,'shop2'],[5,21,'house6'],[10,21,'house3'],[15,21,'shop1'],[24,21,'shop6'],[34,21,'house1'],[38,21,'house0','Mist’s House']].forEach(([x,y,e,l])=>{[x,x+1].forEach(X=>{BL[y][X]=BL[y-1][X]=true;GR[y+1][X]=1});BD.push({x,y,e,l})});
-const homePos=slot=>({x:3.1+(Number(slot)%8)*5.35,y:2.6+Math.floor(Number(slot)/8)*6.0});
+const homePos=slot=>{slot=Number(slot)||0;if(slot<14)return{x:2.5+slot*3,y:6.5};if(slot<26)return{x:[2.5,5.5,8.5,11.5,14.5,17.5,26.5,29.5,32.5,35.5,38.5,41.5][slot-14],y:14.5};return{x:2.5+(slot-26)*3,y:23.5}};
 const LM=[],lm=(k,cx,by,w,x0,y0,x1,y1)=>{LM.push({k,cx,by,w});for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)BL[y][x]=true};
 lm('park11',22,15.3,3.4,21,13,22,14);[[18,12],[25,12],[18,17],[25,17]].forEach(([x,y])=>lm('park26',x+.5,y+1,.9,x,y,x,y));lm('park28',20,18,1.7,19,17,20,17);lm('park28',24,18,1.7,23,17,24,17);lm('park211',19.5,14,.9,19,13,19,13);lm('park211',24.5,14,.9,24,13,24,13);
 lm('park10',34.5,18,3.2,33,16,35,17);lm('park17',39.2,20,4.4,37,18,40,19);lm('park16',6.5,20,5.4,4,18,8,19);lm('park25',13,20,2.4,12,18,13,19);lm('park213',17.5,10.3,2.6,16,9,18,10);lm('park15',37.5,10.3,3,36,9,38,10);
