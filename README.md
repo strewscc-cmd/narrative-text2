@@ -17,7 +17,7 @@ Ranking koin dihitung untuk seluruh kelas.
 
 ## 3. Cara memakai di kelas
 - Guru membuat **kode kelas** (contoh `XIA2025`) dan membagi siswa ke Grup 1, 2, 3, dst.
-- Siswa: buka link > PLAY > buat bebek dan nama > tombol 👥 di menu awal > isi kode kelas dan nomor grup > Join.
+- Siswa: buka link > PLAY > buat bebek dan nama > tombol 👥 di menu awal > masukkan kode kelas > Join Class. Sistem otomatis membagi siswa ke kelompok yang masih memiliki tempat (maksimal 6 siswa per kelompok); siswa tidak dapat memilih kelompok sendiri.
 - Tombol 🏆 di layar permainan menampilkan ranking kelas.
 - Mencuri: tap bebek teman yang dekat, jawab soal kilat. Berhasil = ambil sekitar 10% koin korban (5 sampai 50).
   Gagal = kehilangan 3 koin. Jeda 30 detik antar percobaan. Korban dapat perisai 60 detik, dan koin di bawah 20 tidak bisa dicuri.
