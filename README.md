@@ -24,13 +24,15 @@ Ranking koin dihitung untuk seluruh kelas.
   Hanya pemain yang sedang online dan tidak di dalam rumah yang bisa dicuri.
 
 ## Fitur tambahan
-- **Grup otomatis:** siswa cukup mengisi kode kelas dan memilih "Auto"; game memasukkan mereka ke grup pertama yang masih punya tempat. Siswa tetap bisa memilih nomor grup sendiri.
+- **Grup otomatis:** siswa cukup memasukkan kode kelas lalu menekan Join Class. Game menetapkan grup secara otomatis; siswa tidak dapat memilih nomor grup sendiri. Batas 6 siswa per grup.
 - **Emote dan frasa cepat:** tombol 😀 di layar permainan. Pilihannya tetap (emoji dan 4 frasa), jadi tidak ada chat bebas.
 - **Halaman guru:** buka `teacher.html` di alamat situs yang sama (contoh `https://situsmu.netlify.app/teacher.html`), masukkan kode kelas. Terlihat siapa online di tiap grup, ranking koin, tombol pengumuman ke semua pemain, progres Story Quest, dan unduh CSV.
   Halaman ini tidak dikunci, jadi jangan bagikan alamatnya ke siswa.
 - **Story Quest:** empat chapter harus diselesaikan secara berurutan. Nilai lulus minimal 4/5. Setiap chapter memiliki 3 percobaan; jika belum lulus setelah 3 percobaan, status menjadi *Needs Teacher Review*.
 - **Teacher Control Center:** pada halaman guru, bagian *Story Quest Progress* menampilkan status tiap chapter. Tombol **Reset attempts** mengembalikan hitungan percobaan chapter ke 0, sedangkan **+1 attempt** memberi satu kesempatan tambahan. Perubahan akan tersinkron ke game siswa saat mereka online.
 - **Game ending:** setelah semua 4 chapter lulus, siswa mendapatkan gelar *Story Master*. Mereka kemudian dapat kembali ke desa dan melanjutkan eksplorasi, mengumpulkan koin, serta mendekorasi rumah.
+- **Visit a Friend's House:** semua siswa dalam kode kelas yang sama dapat melihat rumah teman yang muncul sebagai ikon 🏡 di peta. Dekorasi rumah dan taman disimpan ke Firebase agar dapat dilihat teman. Dekati ikon rumah teman lalu tekan tombol kunjungan; mode tamu hanya untuk melihat, tidak bisa mengubah dekorasi.
+- **House Photo:** saat berkunjung, tekan **📸 Take Photo** untuk menyimpan gambar interior rumah teman sebagai file PNG di perangkat.
 
 ## Pengaturan
 Di `index.html`, cari `MAXG=6` (maksimal pemain per grup). Jumlah koin curian ada di fungsi `stealUI`.
