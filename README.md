@@ -26,8 +26,11 @@ Ranking koin dihitung untuk seluruh kelas.
 ## Fitur tambahan
 - **Grup otomatis:** siswa cukup mengisi kode kelas dan memilih "Auto"; game memasukkan mereka ke grup pertama yang masih punya tempat. Siswa tetap bisa memilih nomor grup sendiri.
 - **Emote dan frasa cepat:** tombol 😀 di layar permainan. Pilihannya tetap (emoji dan 4 frasa), jadi tidak ada chat bebas.
-- **Halaman guru:** buka `teacher.html` di alamat situs yang sama (contoh `https://situsmu.netlify.app/teacher.html`), masukkan kode kelas. Terlihat siapa online di tiap grup, ranking koin, tombol pengumuman ke semua pemain, dan unduh CSV.
+- **Halaman guru:** buka `teacher.html` di alamat situs yang sama (contoh `https://situsmu.netlify.app/teacher.html`), masukkan kode kelas. Terlihat siapa online di tiap grup, ranking koin, tombol pengumuman ke semua pemain, progres Story Quest, dan unduh CSV.
   Halaman ini tidak dikunci, jadi jangan bagikan alamatnya ke siswa.
+- **Story Quest:** empat chapter harus diselesaikan secara berurutan. Nilai lulus minimal 4/5. Setiap chapter memiliki 3 percobaan; jika belum lulus setelah 3 percobaan, status menjadi *Needs Teacher Review*.
+- **Teacher Control Center:** pada halaman guru, bagian *Story Quest Progress* menampilkan status tiap chapter. Tombol **Reset attempts** mengembalikan hitungan percobaan chapter ke 0, sedangkan **+1 attempt** memberi satu kesempatan tambahan. Perubahan akan tersinkron ke game siswa saat mereka online.
+- **Game ending:** setelah semua 4 chapter lulus, siswa mendapatkan gelar *Story Master*. Mereka kemudian dapat kembali ke desa dan melanjutkan eksplorasi, mengumpulkan koin, serta mendekorasi rumah.
 
 ## Pengaturan
 Di `index.html`, cari `MAXG=6` (maksimal pemain per grup). Jumlah koin curian ada di fungsi `stealUI`.
