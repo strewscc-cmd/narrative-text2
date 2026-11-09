@@ -151,7 +151,24 @@ let save={coins:60,inv:{},pl:{h:{},g:{}},best:{},c:0,a:0,done:false};try{Object.
 const persist=()=>{try{localStorage.setItem('qv',JSON.stringify(save))}catch(e){}};
 const storyDefault=()=>({attempts:[0,0,0,0],passed:[false,false,false,false],extra:[0,0,0,0],review:[false,false,false,false],finished:false});
 if(!save.story||!Array.isArray(save.story.attempts))save.story=storyDefault();else{const d=storyDefault();save.story={...d,...save.story,attempts:d.attempts.map((v,i)=>Math.max(0,Number(save.story.attempts[i])||0)),passed:d.passed.map((v,i)=>!!save.story.passed[i]),extra:d.extra.map((v,i)=>Math.max(0,Number(save.story.extra[i])||0)),review:d.review.map((v,i)=>!!save.story.review[i])};}
-function storySync(){persist();if(MP.on&&MP.progressRef)MP.progressRef.set({name:save.name||'Duck',group:MP.g,attempts:save.story.attempts,passed:save.story.passed,extra:save.story.extra,review:save.story.review,finished:save.story.finished,best:save.best||{},updatedAt:firebase.database.ServerValue.TIMESTAMP});}
+const SHEETS_ENDPOINT='https://script.google.com/macros/s/AKfycbwPRuEzcKugTmnGZM0HFtsKW_Q2F-Pu-Yj5y-w6Tzt-C5c_afCA3MJMkii0Nrrl_a-y/exec';
+const SHEETS_API_KEY='QUACKVILLE_CLASS_2026';
+let sheetsLastPayload='';
+function sendProgressToSheets(eventName='Progress updated'){
+ if(!MP.on||!MP.code)return;
+ const payload={
+  key:SHEETS_API_KEY,name:save.name||'Duck',classCode:MP.code,group:MP.g,
+  coins:Number(save.coins||0),attempts:save.story.attempts,
+  passed:save.story.passed,review:save.story.review,
+  finished:!!save.story.finished,event:eventName
+ };
+ const signature=JSON.stringify(payload);
+ if(signature===sheetsLastPayload)return;
+ sheetsLastPayload=signature;
+ fetch(SHEETS_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})
+  .catch(err=>{sheetsLastPayload='';console.warn('Quackville Sheets sync failed:',err)});
+}
+function storySync(){persist();if(MP.on&&MP.progressRef){MP.progressRef.set({name:save.name||'Duck',group:MP.g,attempts:save.story.attempts,passed:save.story.passed,extra:save.story.extra,review:save.story.review,finished:save.story.finished,best:save.best||{},updatedAt:firebase.database.ServerValue.TIMESTAMP});sendProgressToSheets(save.story.finished?'Story Master achieved':'Story progress updated');}}
 function storyStatus(i){const p=save.story;if(p.passed[i])return 'passed';if(p.review[i])return 'review';if(i>0&&!p.passed[i-1])return 'locked';return 'available';}
 function storyCount(){return save.story.passed.filter(Boolean).length;}
 function storyEnding(){if(storyCount()!==4||save.story.finished)return;save.story.finished=true;storySync();modal(`<div style="text-align:center"><div style="font-size:3rem">🏆🦆✨</div><span class="tag">THE FINAL CHAPTER · COMPLETE</span><h1>STORY MASTER!</h1><p>The four stories have been told. The forest has found its courage, the kingdom has found its light, the train has revealed its secret, and the Black Lake has finally found peace.</p><p>As the sun rises over Quackville, Madam Mist smiles:</p><blockquote>“You have travelled through four extraordinary stories. But the greatest adventure is the one you create yourself.”</blockquote><h2>Congratulations, ${esc(save.name||'Adventurer')}!</h2><div class="pills"><div class="pill">📖 4/4 Chapters</div><div class="pill">🏅 Story Master</div></div><p>Your adventure continues in Quackville. Explore, decorate, collect coins, and enjoy the village!</p><button class="btn g" id="endVillage">Continue exploring</button></div>`);$('endVillage').onclick=()=>{closeM();G.run=true;hud()}}
