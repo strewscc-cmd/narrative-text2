@@ -12,7 +12,7 @@ let val={},base=null,rows=[],auth=null,user=null,roomCode='';const loadJS=src=>n
 $('go').onclick=async()=>{const cfg=window.FIREBASE_CONFIG;if(!cfg||!cfg.databaseURL){$('st').textContent='Fill in config.js first.';return}
 const code=$('cc').value.toUpperCase().replace(/[^A-Z0-9_-]/g,'');if(!code){$('st').textContent='Type the class code.';return}$('st').textContent='Connecting…';
 try{if(!window.firebase){await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js');await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js')}
-if(!firebase.apps.length)firebase.initializeApp(cfg);auth=firebase.auth();if(!user||user.email!=='lanjaokta@gmail.com'){throw new Error('Please sign in with the authorized teacher account.')}roomCode=code;base=firebase.database().ref('rooms/'+code);base.on('value',s=>{val=s.val()||{}});$('app').style.display='block';$('st').textContent='Live: '+code;render();setInterval(render,1000)}catch(e){$('st').textContent='Could not connect.'}};
+if(!firebase.apps.length)firebase.initializeApp(cfg);auth=firebase.auth();if(!user||user.uid!==TEACHER_UID){throw new Error('Please sign in with the authorized teacher account.')}roomCode=code;base=firebase.database().ref('rooms/'+code);base.on('value',s=>{val=s.val()||{}});$('app').style.display='block';$('st').textContent='Live: '+code;render();setInterval(render,1000)}catch(e){$('st').textContent='Could not connect.'}};
 function render(){fillMoveOptions();const gs=Object.keys(val).filter(k=>/^g\d+$/.test(k)).sort((a,b)=>a.slice(1)-b.slice(1)),board=val.board||{},progress=val.progress||{},on=new Set();let n=0;
 $('groups').innerHTML=gs.map(k=>{const pl=(val[k]||{}).players||{},ps=Object.entries(pl);ps.forEach(([id])=>on.add(id));n+=ps.length;return `<div class="g"><h3>Group ${esc(k.slice(1))} · ${ps.length} online</h3>${ps.map(([id,p])=>`<div>${esc(p.n)} · 🪙${+p.co||0}${p.h?' 🏠':''}</div>`).join('')||'<i>nobody online</i>'}</div>`}).join('')||'<i>No groups yet.</i>';
 rows=Object.entries(board).map(([id,v])=>({n:v.n,g:+v.g||0,co:+v.co||0,on:on.has(id)})).sort((a,b)=>b.co-a.co);
@@ -21,8 +21,57 @@ $('stats').innerHTML=`<span class="pill">🟢 Online ${n}</span><span class="pil
 const chapters=['The Whispering Forest','The Forgotten Kingdom','The Last Train at Midnight','The Curse of the Black Lake'];
 $('story').innerHTML=Object.entries(progress).map(([id,p])=>{const at=p.attempts||[],passed=p.passed||[],extra=p.extra||[],review=p.review||[];return `<div class="g" style="margin:8px 0"><h3>${esc(p.name||id)} · Group ${esc(p.group||'?')}</h3><div class="grid">${chapters.map((name,i)=>{const state=passed[i]?'✅ Passed':review[i]?'🧑‍🏫 Needs Teacher Review':i>0&&!passed[i-1]?'🔒 Locked':'🟡 In progress';return `<div class="g"><b>${name}</b><p>${state}<br>Attempts: ${+at[i]||0}/${3+(+extra[i]||0)}</p><button class="btn" data-act="reset" data-id="${esc(id)}" data-ch="${i}">Reset attempts</button> <button class="btn" data-act="extra" data-id="${esc(id)}" data-ch="${i}">+1 attempt</button></div>`}).join('')}</div><p><b>Completed: ${passed.filter(Boolean).length}/4</b> ${p.finished?'· 🏆 Story Master':''}</p></div>`}).join('')||'<i>No story progress yet. Students need to join the class code in the game.</i>'}
 
-async function initAuth(){try{if(!window.firebase){await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js');await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js')}if(!firebase.apps.length)firebase.initializeApp(window.FIREBASE_CONFIG);auth=firebase.auth();auth.onAuthStateChanged(u=>{user=u&&u.email==='lanjaokta@gmail.com'?u:null;$('login').style.display=user?'none':'block';$('session').style.display=user?'block':'none';$('who').textContent=user?'Signed in as '+user.email:'';if(u&& !user){auth.signOut();$('st').textContent='This account is not authorized for the teacher dashboard.'}})}catch(e){$('st').textContent='Firebase setup error: '+e.message}}
-$('signin').onclick=async()=>{try{if(!auth)await initAuth();const email=$('email').value.trim().toLowerCase();if(email!=='lanjaokta@gmail.com')throw new Error('Use the authorized teacher email.');await auth.signInWithEmailAndPassword(email,$('password').value);$('password').value='';$('st').textContent='Signed in.'}catch(e){$('st').textContent='Sign-in failed: '+e.message}};
+const TEACHER_UID='XZU3OIVgrcTxn7HJsLZdVigqbap2';
+let authReady=null;
+async function initAuth(){
+  if(authReady)return authReady;
+  authReady=(async()=>{
+    try{
+      const cfg=window.FIREBASE_CONFIG;
+      if(!cfg||!cfg.apiKey)throw new Error('Firebase config.js is missing or incomplete.');
+      if(!window.firebase){
+        await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+      }
+      if(!firebase.auth){
+        await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js');
+      }
+      if(!firebase.database){
+        await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js');
+      }
+      if(!firebase.apps.length)firebase.initializeApp(cfg);
+      auth=firebase.auth();
+      auth.onAuthStateChanged(u=>{
+        user=u&&u.uid===TEACHER_UID?u:null;
+        $('login').style.display=user?'none':'block';
+        $('session').style.display=user?'block':'none';
+        $('who').textContent=user?'Signed in as '+user.email:'';
+        if(u&&!user){
+          $('st').textContent='Access denied: this Firebase UID is not the teacher account.';
+          auth.signOut();
+        }
+      },e=>{$('st').textContent='Auth state error: '+e.message});
+      return auth;
+    }catch(e){
+      authReady=null;
+      $('st').textContent='Firebase setup error: '+(e.code?e.code+' — ':'')+e.message;
+      throw e;
+    }
+  })();
+  return authReady;
+}
+$('signin').onclick=async()=>{
+  const btn=$('signin');btn.disabled=true;$('st').textContent='Connecting to Firebase Authentication…';
+  try{
+    await initAuth();
+    const email=$('email').value.trim().toLowerCase();
+    if(email!=='lanjaokta@gmail.com')throw new Error('Use the authorized teacher email.');
+    await auth.signInWithEmailAndPassword(email,$('password').value);
+    $('password').value='';
+    $('st').textContent='Sign-in successful. Checking teacher access…';
+  }catch(e){
+    $('st').textContent='Sign-in failed: '+(e.code?e.code+' — ':'')+e.message;
+  }finally{btn.disabled=false}
+};
 $('logout').onclick=()=>auth&&auth.signOut();
 
 $('story').onclick=async e=>{const b=e.target.closest('button[data-act]');if(!b||!base)return;const id=b.dataset.id,ch=+b.dataset.ch,ref=base.child('progress/'+id),snap=await ref.get(),p=snap.val()||{},attempts=Array.from({length:4},(_,i)=>Math.max(0,Number(p.attempts&&p.attempts[i])||0)),passed=Array.from({length:4},(_,i)=>!!(p.passed&&p.passed[i])),extra=Array.from({length:4},(_,i)=>Math.max(0,Number(p.extra&&p.extra[i])||0)),review=Array.from({length:4},(_,i)=>!!(p.review&&p.review[i]));if(b.dataset.act==='reset'){attempts[ch]=0;review[ch]=false}else if(b.dataset.act==='extra'){extra[ch]++;review[ch]=false}await ref.update({attempts,passed,extra,review,updatedAt:firebase.database.ServerValue.TIMESTAMP});$('st').textContent=b.dataset.act==='reset'?'Attempts reset.':'One extra attempt granted.'};
