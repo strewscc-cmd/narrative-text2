@@ -8,7 +8,9 @@
 <div class="card"><h2>🏆 Ranking</h2><div id="rank"></div><p><button class="btn" id="csv">Download CSV</button></p></div></div>
 <script>
 window.addEventListener('error',e=>{const s=document.getElementById('st');if(s)s.textContent='Dashboard JavaScript error: '+(e.message||'unknown error')});window.addEventListener('unhandledrejection',e=>{const s=document.getElementById('st');if(s)s.textContent='Dashboard request error: '+(e.reason&&e.reason.message||e.reason||'unknown error')});const $=id=>document.getElementById(id),esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let val={},base=null,rows=[],auth=null,user=null,roomCode='';const loadJS=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
+let val={},base=null,rows=[],auth=null,user=null,roomCode='';
+window.onerror=(message,source,line,col)=>{const s=document.getElementById('st');if(s)s.textContent='JavaScript error: '+message+' (line '+line+')';};
+window.onunhandledrejection=e=>{const s=document.getElementById('st');if(s)s.textContent='Background error: '+(e.reason&&e.reason.message||e.reason||'unknown');};const loadJS=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
 $('go').onclick=async()=>{const cfg=window.FIREBASE_CONFIG;if(!cfg||!cfg.databaseURL){$('st').textContent='Fill in config.js first.';return}
 const code=$('cc').value.toUpperCase().replace(/[^A-Z0-9_-]/g,'');if(!code){$('st').textContent='Type the class code.';return}$('st').textContent='Connecting…';
 try{if(!window.firebase){await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js');await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js')}
