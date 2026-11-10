@@ -3,8 +3,18 @@
     "rooms": {
       "$code": {
         ".read": true,
-        ".write": true,
-        "board": { ".indexOn": ["co"] }
+        ".write": "auth != null && auth.uid == 'XZU3OIVgrcTxn7HJsLZdVigqbap2' || !data.exists() || data.child('status').val() != 'ended'",
+        "board": {
+          ".indexOn": [
+            "co"
+          ]
+        }
+      }
+    },
+    "archives": {
+      "$code": {
+        ".read": "auth != null && auth.uid == 'XZU3OIVgrcTxn7HJsLZdVigqbap2'",
+        ".write": "auth != null && auth.uid == 'XZU3OIVgrcTxn7HJsLZdVigqbap2'"
       }
     }
   }
