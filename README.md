@@ -17,14 +17,14 @@ Ranking koin dihitung untuk seluruh kelas.
 
 ## 3. Cara memakai di kelas
 - Guru membuat **kode kelas** (contoh `XIA2025`) dan membagi siswa ke Grup 1, 2, 3, dst.
-- Siswa: buka link > PLAY > buat bebek dan nama > tombol 👥 di menu awal > masukkan kode kelas > Join Class. Sistem otomatis membagi siswa ke kelompok yang masih memiliki tempat (maksimal 6 siswa per kelompok); siswa tidak dapat memilih kelompok sendiri.
+- Siswa: buka link > PLAY > buat bebek dan nama > tombol 👥 di menu awal > masukkan kode kelas > Join Class. Sistem otomatis membagi siswa ke kelompok yang masih memiliki tempat (maksimal 5 siswa per kelompok); siswa tidak dapat memilih kelompok sendiri.
 - Tombol 🏆 di layar permainan menampilkan ranking kelas.
 - Mencuri: tap bebek teman yang dekat, jawab soal kilat. Berhasil = ambil sekitar 10% koin korban (5 sampai 50).
   Gagal = kehilangan 3 koin. Jeda 30 detik antar percobaan. Korban dapat perisai 60 detik, dan koin di bawah 20 tidak bisa dicuri.
   Hanya pemain yang sedang online dan tidak di dalam rumah yang bisa dicuri.
 
 ## Fitur tambahan
-- **Grup otomatis:** siswa cukup memasukkan kode kelas lalu menekan Join Class. Game menetapkan grup secara otomatis; siswa tidak dapat memilih nomor grup sendiri. Batas 6 siswa per grup.
+- **Grup otomatis:** siswa cukup memasukkan kode kelas lalu menekan Join Class. Game menetapkan grup secara otomatis; siswa tidak dapat memilih nomor grup sendiri. Batas 5 siswa per grup.
 - **Emote dan frasa cepat:** tombol 😀 di layar permainan. Pilihannya tetap (emoji dan 4 frasa), jadi tidak ada chat bebas.
 - **Halaman guru:** buka `teacher.html` di alamat situs yang sama (contoh `https://situsmu.netlify.app/teacher.html`), masukkan kode kelas. Terlihat siapa online di tiap grup, ranking koin, tombol pengumuman ke semua pemain, progres Story Quest, dan unduh CSV.
   Halaman ini tidak dikunci, jadi jangan bagikan alamatnya ke siswa.
