@@ -204,7 +204,7 @@ g.font='bold 16px Fredoka,sans-serif';g.fillStyle='#c0392b';g.fillText(lost?'A p
 function spr(k,cx,by,w){const im=SI[k];if(!im||!im.naturalWidth)return;const h=w*im.naturalHeight/im.naturalWidth;ctx.drawImage(im,Math.round(cx-w/2),Math.round(by-h),Math.round(w),Math.round(h))}
 let AW=null;
 // ---- multiplayer (Firebase Realtime Database) ----
-const MAX_GROUPS=9,MAXG=5,MAX_STUDENTS=40,esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),num=(v,d=0)=>Number.isFinite(+v)?+v:d;
+const MAX_GROUPS=5,MAXG=5,MAX_STUDENTS=40,esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),num=(v,d=0)=>Number.isFinite(+v)?+v:d;
 let MP={on:false,peers:{},board:{},home:false,shield:0,cd:0};
 const uid=(()=>{let u=null;try{u=localStorage.getItem('qv_uid')}catch(e){}if(!u){u=Math.random().toString(36).slice(2,10);try{localStorage.setItem('qv_uid',u)}catch(e){}}return u})();
 const loadJS=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
