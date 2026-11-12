@@ -204,21 +204,68 @@ g.font='bold 16px Fredoka,sans-serif';g.fillStyle='#c0392b';g.fillText(lost?'A p
 function spr(k,cx,by,w){const im=SI[k];if(!im||!im.naturalWidth)return;const h=w*im.naturalHeight/im.naturalWidth;ctx.drawImage(im,Math.round(cx-w/2),Math.round(by-h),Math.round(w),Math.round(h))}
 let AW=null;
 // ---- multiplayer (Firebase Realtime Database) ----
-const MAXG=6,esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),num=(v,d=0)=>Number.isFinite(+v)?+v:d;
+const MAX_GROUPS=9,MAXG=5,MAX_STUDENTS=40,esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),num=(v,d=0)=>Number.isFinite(+v)?+v:d;
 let MP={on:false,peers:{},board:{},home:false,shield:0,cd:0};
 const uid=(()=>{let u=null;try{u=localStorage.getItem('qv_uid')}catch(e){}if(!u){u=Math.random().toString(36).slice(2,10);try{localStorage.setItem('qv_uid',u)}catch(e){}}return u})();
 const loadJS=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
 function mpLeave(){if(MP.on){try{MP.me.remove();MP.gp.child('players').off();MP.gp.child('thefts').off();MP.base.child('board').off();if(MP.progressRef)MP.progressRef.off()}catch(e){}}MP={on:false,peers:{},board:{},home:false,shield:0,cd:0}}
-async function mpJoin(code){const cfg=window.FIREBASE_CONFIG;if(!cfg||!cfg.databaseURL)throw new Error('config');
-if(!window.firebase){await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js')}
-if(!firebase.apps.length)firebase.initializeApp(cfg);const base=firebase.database().ref('rooms/'+code);const roomState=(await base.child('status').get()).val();if(roomState==='ended')throw new Error('ended');let g=0,gp=null;const start=parseInt(uid.slice(0,6),36)%20;
-for(let j=0;j<20;j++){const candidate=((start+j)%20)+1,ref=base.child('g'+candidate+'/players');const tx=await ref.transaction(current=>{current=current||{};if(current[uid])return current;if(Object.keys(current).length>=MAXG)return;current[uid]={n:'Joining…'};return current});if(tx.committed){g=candidate;gp=base.child('g'+g);break}}
-if(!g)throw new Error('full');
-mpLeave();MP={on:true,ended:false,code,g,base,gp,me:gp.child('players/'+uid),progressRef:base.child('progress/'+uid),peers:{},board:{},home:false,shield:0,cd:0,acc:0,hb:0,last:'',lastCo:-1};MP.me.onDisconnect().remove();
-MP.base.child('status').on('value',snap=>{if(snap.val()==='ended'&&!MP.ended){MP.ended=true;G.run=false;held.u=held.d=held.l=held.r=0;TD=null;AW=null;toast('🔒 This class session has ended. Read-only mode.');modal(`<h2>🔒 Session ended</h2><p>Your class session has ended. You can still view the village and final class ranking, but gameplay and changes are now locked.</p><p>Final coins: 🪙${Number(save.coins)||0}</p><button class="btn g" id="readOnlyClose">View final results</button>`);$('readOnlyClose').onclick=()=>{closeM();boardUI()};}});MP.progressRef.on('value',snap=>{const v=snap.val();if(!v){storySync();return}save.story={attempts:Array.from({length:4},(_,i)=>Math.max(0,Number(v.attempts&&v.attempts[i])||0)),passed:Array.from({length:4},(_,i)=>!!(v.passed&&v.passed[i])),extra:Array.from({length:4},(_,i)=>Math.max(0,Number(v.extra&&v.extra[i])||0)),review:Array.from({length:4},(_,i)=>!!(v.review&&v.review[i])),finished:!!v.finished};save.best=v.best||save.best||{};persist();});
-const onP=s=>{if(s.key===uid)return;const v=s.val();if(!v)return;const p=MP.peers[s.key]||(MP.peers[s.key]={id:s.key,x:num(v.x),y:num(v.y),w:0});if(p.et===undefined)p.et=v.et;else if(v.et!==p.et){p.et=v.et;p.em=num(v.em,-1);p.eAt=performance.now()}Object.assign(p,{tx:num(v.x),ty:num(v.y),n:String(v.n||'?').slice(0,12),c:num(v.c)%CH.length,f:v.f<0?-1:1,m:v.m?1:0,h:v.h?1:0,co:num(v.co),sh:num(v.sh),g:num(v.g)})};
-gp.child('players').on('child_added',onP);gp.child('players').on('child_changed',onP);gp.child('players').on('child_removed',s=>{delete MP.peers[s.key]});
-base.child('board').orderByChild('co').limitToLast(30).on('value',s=>{MP.board=s.val()||{}});gp.child('thefts').on('child_added',onTheft);gp.child('thefts').on('child_changed',onTheft);let first=true;base.child('announce').on('value',s=>{const v=s.val();if(first){first=false;MP.ann=v&&v.at;return}if(v&&v.at!==MP.ann){MP.ann=v.at;toast('📢 '+String(v.text).slice(0,80));beep(700,.15)}});mpSend(true);return g}
+async function mpJoin(code){
+ const cfg=window.FIREBASE_CONFIG;
+ if(!cfg||!cfg.databaseURL)throw new Error('config');
+ if(!window.firebase){
+  await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+  await loadJS('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js');
+ }
+ if(!firebase.apps.length)firebase.initializeApp(cfg);
+ // Close any previous live membership before rejoining, preventing duplicate presence.
+ mpLeave();
+ const base=firebase.database().ref('rooms/'+code);
+ const roomState=(await base.child('status').get()).val();
+ if(roomState==='ended')throw new Error('ended');
+
+ // Find this device's existing membership across the old 20-group layout.
+ // Keep valid Group 1-9 assignments; migrate old Group 10-20 memberships.
+ let existing=0;
+ const oldGroups=await Promise.all(Array.from({length:20},(_,i)=>base.child('g'+(i+1)+'/players').get()));
+ for(let i=0;i<oldGroups.length;i++){
+  const players=oldGroups[i].val()||{};
+  if(players[uid]){
+   if(!existing)existing=i+1;
+   else await base.child('g'+(i+1)+'/players/'+uid).remove();
+  }
+ }
+ let g=0,gp=null;
+ if(existing>=1&&existing<=MAX_GROUPS){
+  g=existing;gp=base.child('g'+g);
+ }else{
+  // Remove legacy membership before assigning a new group.
+  if(existing)await base.child('g'+existing+'/players/'+uid).remove();
+  const order=Array.from({length:MAX_GROUPS},(_,i)=>i+1);
+  for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
+  for(const candidate of order){
+   const ref=base.child('g'+candidate+'/players');
+   const tx=await ref.transaction(current=>{
+    current=current||{};
+    if(current[uid])return current;
+    if(Object.keys(current).length>=MAXG)return;
+    current[uid]={n:'Joining…'};
+    return current;
+   });
+   if(tx.committed){g=candidate;gp=base.child('g'+g);break}
+  }
+ }
+ if(!g)throw new Error('full');
+ MP={on:true,ended:false,code,g,base,gp,me:gp.child('players/'+uid),progressRef:base.child('progress/'+uid),peers:{},board:{},home:false,shield:0,cd:0,acc:0,hb:0,last:'',lastCo:-1};
+ MP.me.onDisconnect().remove();
+ MP.base.child('status').on('value',snap=>{if(snap.val()==='ended'&&!MP.ended){MP.ended=true;G.run=false;held.u=held.d=held.l=held.r=0;TD=null;AW=null;toast('🔒 This class session has ended. Read-only mode.');modal(`<h2>🔒 Session ended</h2><p>Your class session has ended. You can still view the village and final class ranking, but gameplay and changes are now locked.</p><p>Final coins: 🪙${Number(save.coins)||0}</p><button class="btn g" id="readOnlyClose">View final results</button>`);$('readOnlyClose').onclick=()=>{closeM();boardUI()};}});
+ MP.progressRef.on('value',snap=>{const v=snap.val();if(!v){storySync();return}save.story={attempts:Array.from({length:4},(_,i)=>Math.max(0,Number(v.attempts&&v.attempts[i])||0)),passed:Array.from({length:4},(_,i)=>!!(v.passed&&v.passed[i])),extra:Array.from({length:4},(_,i)=>Math.max(0,Number(v.extra&&v.extra[i])||0)),review:Array.from({length:4},(_,i)=>!!(v.review&&v.review[i])),finished:!!v.finished};save.best=v.best||save.best||{};persist();});
+ const onP=s=>{if(s.key===uid)return;const v=s.val();if(!v)return;const p=MP.peers[s.key]||(MP.peers[s.key]={id:s.key,x:num(v.x),y:num(v.y),w:0});if(p.et===undefined)p.et=v.et;else if(v.et!==p.et){p.et=v.et;p.em=num(v.em,-1);p.eAt=performance.now()}Object.assign(p,{tx:num(v.x),ty:num(v.y),n:String(v.n||'?').slice(0,12),c:num(v.c)%CH.length,f:v.f<0?-1:1,m:v.m?1:0,h:v.h?1:0,co:num(v.co),sh:num(v.sh),g:num(v.g)})};
+ gp.child('players').on('child_added',onP);gp.child('players').on('child_changed',onP);gp.child('players').on('child_removed',s=>{delete MP.peers[s.key]});
+ base.child('board').orderByChild('co').limitToLast(30).on('value',s=>{MP.board=s.val()||{}});
+ gp.child('thefts').on('child_added',onTheft);gp.child('thefts').on('child_changed',onTheft);
+ let first=true;base.child('announce').on('value',s=>{const v=s.val();if(first){first=false;MP.ann=v&&v.at;return}if(v&&v.at!==MP.ann){MP.ann=v.at;toast('📢 '+String(v.text).slice(0,80));beep(700,.15)}});
+ mpSend(true);return g;
+}
 function mpSend(force){if(!MP.on||MP.ended)return;const o={n:save.name||'Duck',c:save.ch||0,x:+P.x.toFixed(2),y:+P.y.toFixed(2),f:P.f,m:(P.sp||0)>.3?1:0,h:MP.home?1:0,co:save.coins,sh:MP.shield,em:MP.em==null?-1:MP.em,et:MP.et||0,g:MP.g},k=JSON.stringify(o);
 if(force||k!==MP.last||MP.hb>2){MP.last=k;MP.hb=0;const stamp=firebase.database.ServerValue.TIMESTAMP;MP.me.set({...o,t:stamp})}
 if(save.coins!==MP.lastCo){MP.lastCo=save.coins;MP.base.child('board/'+uid).set({n:o.n,c:o.c,co:save.coins,g:MP.g})}}
